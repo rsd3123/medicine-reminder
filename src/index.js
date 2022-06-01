@@ -2,166 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
-/*
-
-  
-
-  function Square(props)
-  {
-      return(
-          <button className='square' 
-          onClick ={props.onClick}>
-              {props.value}
-          </button>
-      );
-  }
-  class Board extends React.Component {
-
-    renderSquare(i) {
-      return <Square value ={this.props.squares[i]} 
-          onClick ={() => this.props.onClick(i)}
-      />;
-    }
-  
-    render() {
-        
-  
-      return (
-        <div>
-          <div className="board-row">
-            {this.renderSquare(0)}
-            {this.renderSquare(1)}
-            {this.renderSquare(2)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(3)}
-            {this.renderSquare(4)}
-            {this.renderSquare(5)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(6)}
-            {this.renderSquare(7)}
-            {this.renderSquare(8)}
-          </div>
-        </div>
-      );
-    }
-  }
-  
-  class Game extends React.Component {
-      constructor(props)
-      {
-          super(props);
-          this.state = {
-              history: [{
-                  squares: Array(9).fill(null),
-              }],
-              xIsNext:true,
-              stepNumber: 0,
-          };
-      }
-      handleClick(i)
-      {
-          const history = this.state.history.slice(0, this.state.stepNumber + 1);
-          const current = history[history.length - 1];
-          const squares = current.squares.slice();
-
-          const xIsNext = this.state.xIsNext;
-          //const winner = this.state.winner;
-          if (calculateWinner(squares) || squares[i]) {
-              return;
-            }
-          if(xIsNext)
-          {
-              squares[i] = 'X';
-              this.setState({xIsNext:false});
-          }
-          else
-          {
-              squares[i] = 'O';
-              this.setState({xIsNext:true});
-          }
-          this.setState({
-              history: history.concat([{
-              squares:squares}]),
-              stepNumber: history.length,
-              });
-      
-        
-      }
-
-      jumpTo(step) {
-        this.setState({
-          stepNumber: step,
-          xIsNext: (step % 2) === 0,
-        });
-      }
-    render() {
-        const history = this.state.history;
-        const current = history[this.state.stepNumber];
-        const winner = calculateWinner(current.squares);
-
-        const moves = history.map((step, move) => {
-            const desc = move ?
-              'Go to move #' + move :
-              'Go to game start';
-            return (
-              <li key = {move}>
-                <button onClick={() => this.jumpTo(move)}>{desc}</button>
-              </li>
-            );
-          });
-
-        let status;
-        if(winner)
-        {
-            status = 'Winner: ' + winner;
-        }
-        else{
-            status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
-        }
-      return (
-        <div className="game">
-          <div className="game-board">
-            <Board 
-                squares = {current.squares}
-                onClick={(i)=>this.handleClick(i)}
-            />
-          </div>
-          <div className="game-info">
-            <div>{status}</div>
-            <ol>{moves}</ol>
-          </div>
-        </div>
-      );
-    }
-  }
-  
-  // ========================================
-  function calculateWinner(squares) {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a];
-      }
-    }
-    return null;
-  }
-
-
-  const root = ReactDOM.createRoot(document.getElementById("root"));
-  root.render(<Game />);
-  */
     class Item extends React.Component
     {
         render()
@@ -174,7 +14,6 @@ import './index.css';
                     {medicineName + " @ "+ time}
                 </div>
             );
-        
         }
     }
 
@@ -182,14 +21,22 @@ import './index.css';
     {
         constructor(props)
         {
+            const date = new Date();
+
             super(props);
             this.state = {
                 currentMedicine: '',
+
+                startSeconds: date.getSeconds(),
                 currentHour: '--',
                 currentMin: '--',
                 currentMeridian: '--',
                 currentTime: '',
+
+                //Holds: [medicineName, [displayTime (AM/PM)], [militaryTime]]
                 medicineList: Array(0).fill(null),
+
+                realTime: this.getRealTime(),
             };
 
             this.handleChangeMed = this.handleChangeMed.bind(this);
@@ -197,6 +44,36 @@ import './index.css';
             this.handleChangeMin = this.handleChangeMin.bind(this);
             this.handleChangeMeridian = this.handleChangeMeridian.bind(this);
             this.handleSubmit = this.handleSubmit.bind(this);
+        }
+
+        getRealTime()
+        {
+            const date = new Date();
+            return date.getHours() + ':' + date.getMinutes();
+        }
+
+        componentDidMount()
+        {
+            var startSeconds = this.state.startSeconds;
+
+            //Timer starts with an interval of 60-startSeconds, then transitions to 60 second intervals.
+            this.timerID = setInterval(()=>{
+
+                this.setState({realTime : this.getRealTime()});
+                startSeconds = 0;
+                
+                //Start 60 second intervals
+                clearInterval(this.timerID);
+                this.timerID = setInterval(()=>{
+                    this.setState({realTime : this.getRealTime()});
+                }, 60000);
+
+            },(60000-(startSeconds*1000)));
+        }
+
+        componentWillUnmount() 
+        {
+            clearInterval(this.timerID);
         }
 
         AddItem()
@@ -227,7 +104,7 @@ import './index.css';
                                 <option value="11">11</option>
                                 <option value="12">12</option>
                             </select>
-                            <label> : </label>
+                            <label>: </label>
                             <select value = {this.state.currentMin} onChange={this.handleChangeMin}>
                                 <option defaultValue="--">--</option>
                                 <option value="00">00</option>
@@ -308,23 +185,63 @@ import './index.css';
 
         handleSubmit(event)
         {
+            //Initilize Variables
             const medicineList = this.state.medicineList;
+            const medicineName = this.state.currentMedicine.toUpperCase();
 
-            const medicineName = this.state.currentMedicine;
             const time = this.state.currentTime;
+            var realTime;
+
             const hour = this.state.currentHour;
+            var hourInt = parseInt(hour);
+
             const min = this.state.currentMin;
+            var minInt = parseInt(min);
+
             const meridian = this.state.currentMeridian;
 
-            //console.log(time);
-
+            //Convert to military time
+            if(time.endsWith("PM") && hourInt !== 12)
+                hourInt += 12;
+            else if(time.endsWith("AM") && hourInt === 12)
+                hourInt = 0;
+            realTime = hourInt.toString() + ':' + minInt.toString();
+            
             //Make sure input is viable.
             if(medicineName.trim() === '')
                 alert("Enter a medicine name.");
             else if(hour === "--" || min === "--" || meridian === "--")
                 alert("Please enter a proper time.")
+
+            //If input is viable, put into list
             else
-                this.setState({medicineList: medicineList.concat([([medicineName, time])])}); 
+            {
+                var alreadyIn = false;
+                //If medicine is already in the list
+                for(var i = 0; i <= medicineList.length - 1; i++)
+                {
+                    //If medicine name is already in list
+                    if(medicineName === medicineList[i][0])
+                    {
+                        console.log("Name Already In");
+                        alreadyIn = true;
+                        //If time is the same alert already in
+                        if(medicineList[i][2].includes(realTime))
+                        {
+                            alert("That medicine and time has already been added.");
+                        }
+                        //If time is not in list
+                        else
+                        {
+                            medicineList[i][1].push(time);
+                            medicineList[i][2].push(realTime);
+                            this.setState({medicineList: medicineList}); 
+                        }
+                    }
+                }
+                if(!alreadyIn)
+                    this.setState({medicineList: medicineList.concat([([medicineName, [time], [realTime]])])}); 
+            }
             
             event.preventDefault();
         }
@@ -334,14 +251,12 @@ import './index.css';
             this.setState({currentMedicine: event.target.value});
         }
 
-        
         handleChangeMeridian(event)
         {
             this.setState({currentMeridian: event.target.value,
                 currentTime: this.state.currentHour+ ":" + this.state.currentMin + ' ' + event.target.value});
         }
         
-
         handleChangeHour(event)
         {
             this.setState({currentHour: event.target.value,
@@ -354,17 +269,35 @@ import './index.css';
                 currentTime: this.state.currentHour+ ":" + event.target.value + ' ' + this.state.currentMeridian });
         }
 
+        checkForMedicineTime()
+        {
+            const medicineList = this.state.medicineList;
+            const realTime =  this.state.realTime;
+
+            //Loop through medicine list, if time == realTime then send an alert.
+            for(var i = 0; i <= medicineList.length - 1; i++)
+            {
+                console.log(medicineList[i][1] + " == " + realTime)
+                if(medicineList[i][2].includes(realTime))
+                    alert("Time to take medicine: " + medicineList[i][0]);
+            }
+        }
+
         render()
         {
             console.log("Submit: " + this.state.medicineList);
-        
-            const medicineList = this.state.medicineList;
+            console.log("Date: " + this.state.realTime);
 
+            //Display list of medicines
+            const medicineList = this.state.medicineList;
             const currentList = medicineList.map((key, item) => {
                 return <li key = {key}>
                     <Item medicineList = {this.state.medicineList[item]}/>
                 </li>
             });
+            
+            //Call check to see if it's time to take a medicine.
+            this.checkForMedicineTime();
 
             return(
                 <div>
