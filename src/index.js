@@ -1,7 +1,41 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+    /*
+    class Popup extends React.Component {
+        constructor(props)
+        {
+            super(props);
+            this.state = {
+               // playingSound: this.props.playingSound,
+                audio: new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3').play(),
+              }
+              
+        }
+        stopAlarm()
+        {
+            this.state.audio.pause();
+            this.setState({popupVisible: false, playingSound: false});
+        }
 
+        componentDidMount() {
+            this.state.audio.addEventListener('ended', () => this.setState({ playSound: false }));
+          }
+          
+          componentWillUnmount() {
+            this.state.audio.removeEventListener('ended', () => this.setState({ playSound: false }));  
+          }
+        render() {
+            const medicineName = this.props.medicineList;
+            return (
+                <div >
+                    <label>Time to take {medicineName}!</label>
+                    <button onClick={this.stopAlarm()}>Stop Alarm</button>
+                </div>
+            );
+        }
+    }
+    */
     class Item extends React.Component
     {
         render()
@@ -37,6 +71,16 @@ import './index.css';
                 medicineList: Array(0).fill(null),
 
                 realTime: this.getRealTime(),
+
+                /*
+                playingSound: false,
+                audio: new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'),
+                popupVisible: false,
+                alarmItem: null,
+                */
+                //Holds all times that have been called that day- Set to null each new day
+               // alreadyCalled: Array(0).fill(null),
+                timeChecked: false,
             };
 
             this.handleChangeMed = this.handleChangeMed.bind(this);
@@ -49,6 +93,7 @@ import './index.css';
         getRealTime()
         {
             const date = new Date();
+            this.setState({timeChecked: false})
             return date.getHours() + ':' + date.getMinutes();
         }
 
@@ -82,12 +127,12 @@ import './index.css';
                 <form onSubmit={this.handleSubmit}>
                     <div className= 'text-fields'>
                         <div>
-                            <label>Enter New Medicine Name Here: </label>
-                            <textarea value = {this.state.currentMedicine} onChange={this.handleChangeMed} />
+                            <label className='input'>Enter New Medicine Name Here: </label>
+                            <textarea rows = '1' className='input' id = "nameTextArea" value = {this.state.currentMedicine} onChange={this.handleChangeMed} />
                         </div>
                         
                         <div>
-                            <label>Time to take this medicine: </label>
+                            <label className='input'>Time to take this medicine: </label>
                             
                             <select value = {this.state.currentHour} onChange={this.handleChangeHour}>
                                 <option defaultValue="--">--</option>
@@ -177,7 +222,7 @@ import './index.css';
                             </select>
                         </div>
                     
-                        <input type="submit" value="Submit"/>
+                        <input className='input' id='submitButton' type="submit" value="Submit"/>
                     </div>
                 </form>
             ); 
@@ -273,22 +318,26 @@ import './index.css';
         {
             const medicineList = this.state.medicineList;
             const realTime =  this.state.realTime;
+          // const alreadyCalled = this.state.alreadyCalled;
 
             //Loop through medicine list, if time == realTime then send an alert.
             for(var i = 0; i <= medicineList.length - 1; i++)
             {
-                console.log(medicineList[i][1] + " == " + realTime)
+                console.log(medicineList[i][2] + " == " + realTime)
                 if(medicineList[i][2].includes(realTime))
-                    alert("Time to take medicine: " + medicineList[i][0]);
+                {
+                    alert("Time to take " + medicineList[i][0]);
+                }
             }
+
+            this.setState({timeChecked: true});
         }
 
         render()
         {
             console.log("Submit: " + this.state.medicineList);
             console.log("Date: " + this.state.realTime);
-
-            //Display list of medicines
+        
             const medicineList = this.state.medicineList;
             const currentList = medicineList.map((key, item) => {
                 return <li key = {key}>
@@ -297,19 +346,34 @@ import './index.css';
             });
             
             //Call check to see if it's time to take a medicine.
-            this.checkForMedicineTime();
+            const timeChecked = this.state.timeChecked;
 
+            if(!timeChecked)
+                this.checkForMedicineTime();
+        
             return(
-                <div>
+                <div className = 'Base'>
+                    <div className='header'>
+                        <h1>Medicine Reminder</h1>
+                        <div className='instructions'>
+                        <ul>
+                            <h5>Enter the name of each medicine you take and the time you take it. </h5>
+                            <h5>Enter the same medicine name with a different time to add multiple reminders for that medicine. </h5>
+                            <h5>Reminders take the form of alerts that pop-up on screen. When not on this page, reminders take the form of a notification on the tab of this website.</h5>
+                            <h5>To clear all set reminders, refresh this page. Reminders will stay active until this page is closed/refreshed, so no need to re-set reminders every day.</h5>
+                            </ul>
+                        </div>
+                    </div>
+
                     <div className = "enterMed">
+                        <h4>Enter Medicines and Times: </h4>
                         {this.AddItem()}
                     </div>
 
                     <div className = "medList">
-                        <div>Your Medicines and Times: </div>
+                        <h4>Your Medicines and Times: </h4>
                         <ul>{currentList}</ul>
                     </div>
-
                 </div>
             );
         }
