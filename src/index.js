@@ -344,17 +344,17 @@ class Base extends React.Component
                 <div className='header'>
                     <h1>Medicine Reminder</h1>
                     <div className='instructions'>
-                    <ul>
-                        <h5>Enter the name of each medicine you take and the time you take it. </h5>
-                        <h5>Enter the same medicine name with a different time to add multiple reminders for that medicine. </h5>
-                        <h5>Reminders take the form of alerts that pop-up on screen. When not on this page, reminders take the form of a notification on the tab of this website.</h5>
-                        <h5>To clear all set reminders, refresh this page. Reminders will stay active until this page is closed/refreshed, so no need to re-set reminders every day.</h5>
-                        </ul>
+                    <ol id = 'directions'>
+                        <li>Enter the name of each medicine you take and the time you take it. </li>
+                        <li>Enter the same medicine name with a different time to add multiple reminders for that medicine. </li>
+                        <li>Reminders take the form of alerts that pop-up on screen. When not on this page, reminders take the form of a notification on the tab of this website.</li>
+                        <li>To clear all set reminders, refresh this page. Reminders will stay active until this page is closed/refreshed, so no need to re-set reminders every day.</li>
+                    </ol>
                     </div>
                 </div>
 
                 <div className = "enterMed">
-                    <h4>Enter Medicines and Times: </h4>
+                    <h4 id ='enterNameText'>Enter Medicines and Times: </h4>
                     {this.AddItem()}
                 </div>
 
