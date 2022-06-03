@@ -14,8 +14,10 @@
  *  -Add ability to add multiple times at once.
  *      -Num of times box, create new text for each one.
  *  -Add ability to set medicine for 'anytime', where the user would checkoff if they took that medicine for the day.
- *  -Clean up/comment code.
- *  -Add more CSS. 
+ *  -Clean up/modulate/comment code.
+ *  -Add more CSS.
+ *      -Color scheme
+ *      -Spacing 
  */
 
 import React from 'react';
@@ -341,8 +343,8 @@ class Base extends React.Component
     
         return(
             <div className = 'Base'>
+                <h1>Medicine Reminder</h1>
                 <div className='header'>
-                    <h1>Medicine Reminder</h1>
                     <div className='instructions'>
                     <ol id = 'directions'>
                         <li>Enter the name of each medicine you take and the time you take it. </li>

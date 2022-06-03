@@ -1,14 +1,12 @@
 
 body {
-    font: 130% "Times New Roman", Futura, sans-serif;
-    margin: 1%;
+    font: 130% "Helvetica", Futura, sans-serif;
     background-color: #DADED4;
     color: #3C403D;
     flex-direction: column;
 }
 
 .Base{
-    margin: 0%;
     display:flex;
     justify-content: center;
     align-items: center;
@@ -25,11 +23,10 @@ h1{
     display: flex;
     justify-content: center;
     align-items: center;
-    
     padding-top: 2%;
     padding-bottom: 2%;
-    padding-left: 2%;
-    padding-right: 2%;
+    padding-left: 25%;
+    padding-right: 25%;
     background-color: #3C403D;
     border-style:double;
     border-color: #A3BCB6;
@@ -99,7 +96,7 @@ ol, ul {
     border-style:solid;
     border-width:1%;
     color: #3C403D;
-    font-family: 'Times New Roman', Times, serif;
+    font-family:Arial, Helvetica, sans-serif;
     font-size: large;
 }
 
@@ -116,6 +113,12 @@ ol, ul {
 .selectTime{
     flex-direction: row;
     padding-bottom: 7%;
+    
+    color: #3C403D;
+}
+
+select{
+    background-color: #DADED4;
 }
 
 #submitButton{
@@ -139,8 +142,8 @@ ol, ul {
 
 .medList{
     margin-top: 1%;
-    padding-left: 2%;
-    padding-right: 2%;
+    padding-left: 2.3%;
+    padding-right: 2.3%;
     padding-top: 1%;
     padding-bottom: 3%;
 
