@@ -1,53 +1,139 @@
 
 body {
-    font: 14px "Century Gothic", Futura, sans-serif;
-    margin: 20px;
-  }
-  
-  /*
-  ol, ul {
-    padding-left: 30px;
-  }
-  
-  .board-row:after {
-    clear: both;
-    content: "";
-    display: table;
-  }
-  
-  .status {
-    margin-bottom: 10px;
-  }
-  
-  .square {
-    background: #fff;
-    border: 1px solid #999;
-    float: left;
-    font-size: 24px;
-    font-weight: bold;
-    line-height: 34px;
-    height: 34px;
-    margin-right: -1px;
-    margin-top: -1px;
-    padding: 0;
-    text-align: center;
-    width: 34px;
-  }
-  
-  .square:focus {
-    outline: none;
-  }
-  
-  .kbd-navigation .square:focus {
-    background: #ddd;
-  }
-  
-  .game {
+    font: 130% "Times New Roman", Futura, sans-serif;
+    margin: 1%;
+    background-color: #DADED4;
+    color: #3C403D;
+    flex-direction: column;
+}
+
+.Base{
+    margin: 0%;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+h5{
+    padding: 0%;
+    margin: 1%;
+    font-size: large;
+}
+
+h1{
     display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    padding-top: 2%;
+    padding-bottom: 2%;
+    padding-left: 2%;
+    padding-right: 2%;
+    background-color: #3C403D;
+    border-style:double;
+    border-color: #A3BCB6;
+    color:#DADED4
+}
+
+h4{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    font-size:x-large;
+}
+
+ol, ul {
+    list-style:circle;
+}
+
+.enterMed{
+    padding: 2%;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items:center;
+    background-color: #A3BCB6;
+    border-color: #39603D;
+    border-width: 10%;
+    border-style: solid;
+}
+
+.userInput{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.inputName{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 0%;
+    padding-top: 1%;
+    flex-direction: column;
+}
+
+#nameTextArea{
+    width:100%;
+    height: 20%;
+    background-color: #DADED4;
+    border-color: rgba(36, 36, 36, 0.555);
+    border-style:solid;
+    border-width:1%;
+    color: #3C403D;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: large;
+}
+
+.enterTime{
+    padding-top: 2.5%;
+    padding-bottom: 5%;
+    margin-top:0%;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.selectTime{
     flex-direction: row;
-  }
-  
-  .game-info {
-    margin-left: 20px;
-  }
-  */
+}
+
+#submitButton{
+    width:100%;
+    height: 100%;
+    padding-left: 50%;
+    padding-right: 50%;
+    padding-top:5%;
+    padding-bottom: 5%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #DADED4;
+    background-color: #39603D;
+    border-color: #3C403D;
+    border-width: 1%;
+    border-style: solid;
+}
+
+.medList{
+    margin-top: 1%;
+    padding: 2%;
+    padding-top: 1%;
+    padding-bottom: 3%;
+    background-color: #A3BCB6;
+    border-color: #39603D ;
+    color:#3C403D;
+    border-width: 1%;
+    border-style: solid;
+}
+
+.listTitle{
+    padding-bottom: 0%;
+}
