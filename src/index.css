@@ -1,4 +1,4 @@
-
+/*For some reason, border-width, border-style, and border-color get put into one border statement, causing an error in build. To fix this, go into the build and split apart this statement*/
 body {
     font: 130% "Helvetica", Futura, sans-serif;
     background-color: #DADED4;
@@ -62,8 +62,10 @@ ol, ul {
     align-items:center;
     background-color: #A3BCB6;
     border-color: #39603D;
-    border-width: 10%;
+    
     border-style: solid;
+    
+    border-width: 10%;
 }
 
 .userInput{
@@ -148,10 +150,12 @@ select{
     padding-bottom: 3%;
 
     background-color: #A3BCB6;
-    border-color: #39603D ;
+    border-color: #39603D; 
     color:#3C403D;
-    border-width: 1%;
+    
     border-style: solid;
+   
+    border-width: 1%;
 }
 
 .listTitle{

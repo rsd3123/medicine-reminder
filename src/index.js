@@ -10,6 +10,8 @@
  *  -Remove certain time from list.
  *  -Clear list (done already by refreshing page)
  *  -Create account to save reminders.
+ *      -If this is done, need backend.
+ *      -Add ability for user to enter email/phone # to recieve message/email reminder.
  *  -Check-off wether or not you took a certain medicine. (Resets every day)
  *  -Add ability to add multiple times at once.
  *      -Num of times box, create new text for each one.
@@ -138,7 +140,7 @@ class Base extends React.Component
                                 <option value="11">11</option>
                                 <option value="12">12</option>
                             </select>
-                            <label>: </label>
+                            <label>:</label>
                             <select value = {this.state.currentMin} onChange={this.handleChangeMin}>
                                 <option defaultValue="--">--</option>
                                 <option value="00">00</option>
