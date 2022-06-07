@@ -26,6 +26,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import io from 'socket.io-client';
+import { response } from 'express';
 
 class Account extends React.Component
 {
@@ -119,6 +120,9 @@ class Base extends React.Component
             signInPassword: null,
             signUpEmail: null,
             signUpPassword: null,
+
+            gotMessage: false,
+            newestMessage: null,
         };
 
         this.handleChangeMed = this.handleChangeMed.bind(this);
@@ -404,14 +408,14 @@ class Base extends React.Component
         event.preventDefault();
     }
 
-    handleSignUpSubmit(event)
+    async handleSignUpSubmit(event)
     {
         //Send account name/password to server
         //Make sure user enters the proper information in the proper fields
         //TODO: make sure password is strong (10+ characters, atleast one of each: uppercase, lowercase, number, symbol)
-        if(!this.state.signInEmail || !isValidEmail(this.state.signInEmail))
+        if(!this.state.signUpEmail || !isValidEmail(this.state.signUpEmail))
             alert("Please enter a valid email.");
-        else if(!this.state.signInPassword)
+        else if(!this.state.signUpPassword)
             alert("Please enter a password.");
         //If info is entered correctly: 
         else
@@ -420,13 +424,44 @@ class Base extends React.Component
             
 
             //TODO: this needs to wait for repsonse from server that email is unique, or else throw alert("Email already in use.")
+           // await this.waitForConf();
+
+            const response = this.state.newestMessage;
             
-            this.setState({accountName: this.state.signUpEmail});
-            this.toggleLogin();
+
+            /*
+            var exists = false;
+            exists = await new Promise(resolve => this.state.socket.emit("message", JSON.stringify({type:'SignUp', email: this.state.signUpEmail, password: this.state.signUpPassword}), data => resolve(data.result)));
+
+            console.log("exists")
+            */
+            if(response == "accountCreated")
+            {
+                this.setState({accountName: this.state.signUpEmail});
+                this.toggleLogin();
+                console.log("Done")
+            }
+            else if(response == "errorEmailExists")
+            {
+                alert("Email already in use, please use a different email");
+            }
+            
         }
         
         //Get  conformation, then login with these credentials (Or not log in, just prompt "Account created, please log in.")
         event.preventDefault();
+    }
+
+    async waitForConf()
+    {
+        
+        while(!this.state.gotMessage)
+        {
+            console.log("In while loop")
+        }
+        
+        console.log("Out of loop")
+        this.setState({gotMessage: false});
     }
 
     handleChangeLoginEmail(event)
@@ -451,7 +486,14 @@ class Base extends React.Component
 
     render()
     {
-
+        /*
+        this.state.socket.on("message", message => {
+            message = JSON.parse(message);
+            var response = message.type;
+            this.setState({gotMessage: true, newestMessage: response});
+            console.log("In listener")
+        });
+        */
        // this.state.socket.emit("message",JSON.stringify({type: 'test'}));
         console.log("Submit: " + this.state.medicineList);
         console.log("Date: " + this.state.realTime);
