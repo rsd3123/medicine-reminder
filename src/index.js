@@ -26,7 +26,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import io from 'socket.io-client';
-import { response } from 'express';
+//import { response } from 'express';
 
 class Account extends React.Component
 {
@@ -451,7 +451,7 @@ class Base extends React.Component
         //Get  conformation, then login with these credentials (Or not log in, just prompt "Account created, please log in.")
         event.preventDefault();
     }
-
+    /*
     async waitForConf()
     {
         
@@ -463,7 +463,7 @@ class Base extends React.Component
         console.log("Out of loop")
         this.setState({gotMessage: false});
     }
-
+    */
     handleChangeLoginEmail(event)
     {
         this.setState({signInEmail: event.target.value});
@@ -486,14 +486,7 @@ class Base extends React.Component
 
     render()
     {
-        /*
-        this.state.socket.on("message", message => {
-            message = JSON.parse(message);
-            var response = message.type;
-            this.setState({gotMessage: true, newestMessage: response});
-            console.log("In listener")
-        });
-        */
+       
        // this.state.socket.emit("message",JSON.stringify({type: 'test'}));
         console.log("Submit: " + this.state.medicineList);
         console.log("Date: " + this.state.realTime);
