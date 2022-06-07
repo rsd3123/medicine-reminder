@@ -25,6 +25,52 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import io from 'socket.io-client';
+
+class Account extends React.Component
+{
+    render()
+    {
+        return(
+            <div>
+                <text>Current Account: </text>
+                <text>{this.props.accountName}</text> 
+            </div>
+        );
+    }
+}
+
+class LoginForm extends React.Component
+{
+    render()
+    {
+        return(
+           <div className = 'LoginBase'>
+               <form onSubmit={this.props.handleLoginSubmit}>
+                   <div className = 'SignIn'>
+                       <label>Sign In: </label>
+                       <textarea defaultValue={'Email'} onChange={this.props.handleChangeLoginEmail}></textarea>
+                       <textarea defaultValue={'Password'} onChange={this.props.handleChangeLoginPassword}></textarea>
+                       <input className='inputLogin' id='loginButton' type="submit" value="Login"/>
+                   </div>
+                </form>
+
+                <label> or</label>
+
+                <form onSubmit = {this.props.handleSignUpSubmit}>
+                   <div className = 'SignUp'>
+                       <label>Sign Up: </label>
+                       <textarea defaultValue={'Email'} onChange={this.props.handleChangeSignUpEmail}></textarea>
+                       <textarea defaultValue={'Password'} onChange={this.props.handleChangeSignUpPassword}></textarea>
+                       <input className='inputLogin' id='signupButton' type="submit" value="Create Account"/>
+                   </div>
+               </form>
+           </div>
+        );
+    }
+
+    
+}
 
 class Item extends React.Component
 {
@@ -61,16 +107,18 @@ class Base extends React.Component
             medicineList: Array(0).fill(null),
 
             realTime: this.getRealTime(),
-
-            /*
-            playingSound: false,
-            audio: new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'),
-            popupVisible: false,
-            alarmItem: null,
-            */
-            //Holds all times that have been called that day- Set to null each new day
-            // alreadyCalled: Array(0).fill(null),
             timeChecked: false,
+
+            socket: io(`http://${window.location.hostname}:3000`),
+
+            isLogin: false,
+            accountName: "Not signed In",
+
+
+            signInEmail: '',
+            signInPassword: '',
+            signUpEmail: '',
+            signUpPassword: '',
         };
 
         this.handleChangeMed = this.handleChangeMed.bind(this);
@@ -78,6 +126,13 @@ class Base extends React.Component
         this.handleChangeMin = this.handleChangeMin.bind(this);
         this.handleChangeMeridian = this.handleChangeMeridian.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+
+        this.handleChangeLoginEmail = this.handleChangeLoginEmail.bind(this);
+        this.handleChangeLoginPassword = this.handleChangeLoginPassword.bind(this);
+        this.handleChangeSignUpEmail = this.handleChangeSignUpEmail.bind(this);
+        this.handleChangeSignUpPassword = this.handleChangeSignUpPassword.bind(this);
+        this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
+        this.handleSignUpSubmit = this.handleSignUpSubmit.bind(this);
     }
 
     getRealTime()
@@ -109,6 +164,116 @@ class Base extends React.Component
     componentWillUnmount() 
     {
         clearInterval(this.timerID);
+    }
+
+    handleSubmit(event)
+    {
+        //Initilize Variables
+        const medicineList = this.state.medicineList;
+        const medicineName = this.state.currentMedicine.toUpperCase();
+
+        const time = this.state.currentTime;
+        var realTime;
+
+        const hour = this.state.currentHour;
+        var hourInt = parseInt(hour);
+
+        const min = this.state.currentMin;
+        var minInt = parseInt(min);
+
+        const meridian = this.state.currentMeridian;
+
+        //Convert to military time
+        if(time.endsWith("PM") && hourInt !== 12)
+            hourInt += 12;
+        else if(time.endsWith("AM") && hourInt === 12)
+            hourInt = 0;
+        realTime = hourInt.toString() + ':' + minInt.toString();
+        
+        //Make sure input is viable.
+        if(medicineName.trim() === '')
+            alert("Enter a medicine name.");
+        else if(hour === "--" || min === "--" || meridian === "--")
+            alert("Please enter a proper time.")
+
+        //If input is viable, put into list
+        else
+        {
+            var alreadyIn = false;
+            //If medicine is already in the list
+            for(var i = 0; i <= medicineList.length - 1; i++)
+            {
+                //If medicine name is already in list
+                if(medicineName === medicineList[i][0])
+                {
+                    console.log("Name Already In");
+                    alreadyIn = true;
+                    //If time is the same alert already in
+                    if(medicineList[i][2].includes(realTime))
+                    {
+                        alert("That medicine and time has already been added.");
+                    }
+                    //If time is not in list
+                    else
+                    {
+                        medicineList[i][1].push(time);
+                        medicineList[i][2].push(realTime);
+                        this.setState({medicineList: medicineList}); 
+                    }
+                }
+            }
+            if(!alreadyIn)
+                this.setState({medicineList: medicineList.concat([([medicineName, [time], [realTime]])])}); 
+        }
+        
+        event.preventDefault();
+    }
+
+    handleChangeMed(event)
+    {
+        this.setState({currentMedicine: event.target.value});
+    }
+
+    handleChangeMeridian(event)
+    {
+        this.setState({currentMeridian: event.target.value,
+            currentTime: this.state.currentHour+ ":" + this.state.currentMin + ' ' + event.target.value});
+    }
+    
+    handleChangeHour(event)
+    {
+        this.setState({currentHour: event.target.value,
+            currentTime: event.target.value + ":" + this.state.currentMin + ' ' + this.state.currentMeridian });
+    }
+
+    handleChangeMin(event)
+    {
+        this.setState({currentMin: event.target.value,
+            currentTime: this.state.currentHour+ ":" + event.target.value + ' ' + this.state.currentMeridian });
+    }
+
+    checkForMedicineTime()
+    {
+        const medicineList = this.state.medicineList;
+        const realTime =  this.state.realTime;
+        // const alreadyCalled = this.state.alreadyCalled;
+
+        //Loop through medicine list, if time == realTime then send an alert.
+        for(var i = 0; i <= medicineList.length - 1; i++)
+        {
+            console.log(medicineList[i][2] + " == " + realTime)
+            if(medicineList[i][2].includes(realTime))
+            {
+                alert("Time to take " + medicineList[i][0]);
+            }
+        }
+
+        this.setState({timeChecked: true});
+    }
+
+    toggleLogin()
+    {
+       this.setState({isLogin: !this.state.isLogin});
     }
 
     AddItem()
@@ -219,123 +384,65 @@ class Base extends React.Component
             </form>
         ); 
     }
-
-    handleSubmit(event)
+    
+    handleLoginSubmit(event)
     {
-        //Initilize Variables
-        const medicineList = this.state.medicineList;
-        const medicineName = this.state.currentMedicine.toUpperCase();
+        //Send account name/password to server
+        console.log("Hello!");
+        this.state.socket.emit("message", JSON.stringify({type:'SignIn', email: this.state.signInEmail, password: this.state.signInPassword}));
 
-        const time = this.state.currentTime;
-        var realTime;
-
-        const hour = this.state.currentHour;
-        var hourInt = parseInt(hour);
-
-        const min = this.state.currentMin;
-        var minInt = parseInt(min);
-
-        const meridian = this.state.currentMeridian;
-
-        //Convert to military time
-        if(time.endsWith("PM") && hourInt !== 12)
-            hourInt += 12;
-        else if(time.endsWith("AM") && hourInt === 12)
-            hourInt = 0;
-        realTime = hourInt.toString() + ':' + minInt.toString();
-        
-        //Make sure input is viable.
-        if(medicineName.trim() === '')
-            alert("Enter a medicine name.");
-        else if(hour === "--" || min === "--" || meridian === "--")
-            alert("Please enter a proper time.")
-
-        //If input is viable, put into list
-        else
-        {
-            var alreadyIn = false;
-            //If medicine is already in the list
-            for(var i = 0; i <= medicineList.length - 1; i++)
-            {
-                //If medicine name is already in list
-                if(medicineName === medicineList[i][0])
-                {
-                    console.log("Name Already In");
-                    alreadyIn = true;
-                    //If time is the same alert already in
-                    if(medicineList[i][2].includes(realTime))
-                    {
-                        alert("That medicine and time has already been added.");
-                    }
-                    //If time is not in list
-                    else
-                    {
-                        medicineList[i][1].push(time);
-                        medicineList[i][2].push(realTime);
-                        this.setState({medicineList: medicineList}); 
-                    }
-                }
-            }
-            if(!alreadyIn)
-                this.setState({medicineList: medicineList.concat([([medicineName, [time], [realTime]])])}); 
-        }
-        
+        //socket.send
         event.preventDefault();
     }
 
-    handleChangeMed(event)
+    handleSignUpSubmit(event)
     {
-        this.setState({currentMedicine: event.target.value});
+        //Send account name/password to server
+        //console.log("Yo!");
+        this.state.socket.emit("message", JSON.stringify({type:'SignUp', email: this.state.signUpEmail, password: this.state.signUpPassword}));
+
+        //Get  conformation, then login with these credentials (Or not log in, just prompt "Account created, please log in.")
+        event.preventDefault();
     }
 
-    handleChangeMeridian(event)
+    handleChangeLoginEmail(event)
     {
-        this.setState({currentMeridian: event.target.value,
-            currentTime: this.state.currentHour+ ":" + this.state.currentMin + ' ' + event.target.value});
-    }
-    
-    handleChangeHour(event)
-    {
-        this.setState({currentHour: event.target.value,
-            currentTime: event.target.value + ":" + this.state.currentMin + ' ' + this.state.currentMeridian });
+        this.setState({signInEmail: event.target.value});
     }
 
-    handleChangeMin(event)
+    handleChangeLoginPassword(event)
     {
-        this.setState({currentMin: event.target.value,
-            currentTime: this.state.currentHour+ ":" + event.target.value + ' ' + this.state.currentMeridian });
+        this.setState({signInPassword: event.target.value});
     }
 
-    checkForMedicineTime()
+    handleChangeSignUpEmail(event)
     {
-        const medicineList = this.state.medicineList;
-        const realTime =  this.state.realTime;
-        // const alreadyCalled = this.state.alreadyCalled;
+        this.setState({signUpEmail: event.target.value});
+    }
 
-        //Loop through medicine list, if time == realTime then send an alert.
-        for(var i = 0; i <= medicineList.length - 1; i++)
-        {
-            console.log(medicineList[i][2] + " == " + realTime)
-            if(medicineList[i][2].includes(realTime))
-            {
-                alert("Time to take " + medicineList[i][0]);
-            }
-        }
-
-        this.setState({timeChecked: true});
+    handleChangeSignUpPassword(event)
+    {
+        this.setState({signUpPassword: event.target.value});
     }
 
     render()
     {
+
+       // this.state.socket.emit("message",JSON.stringify({type: 'test'}));
         console.log("Submit: " + this.state.medicineList);
         console.log("Date: " + this.state.realTime);
-    
+
+        console.log("Name: " + this.state.accountName);
+        const isLogin = this.state.isLogin;
+
         const medicineList = this.state.medicineList;
         const currentList = medicineList.map((key, item) => {
             return <li key = {key}>
                 <Item medicineList = {this.state.medicineList[item]}/>
             </li>
         });
+
+        const loginForm = (isLogin ? <LoginForm handleChangeLoginEmail = {this.handleChangeLoginEmail} handleChangeLoginPassword = {this.handleChangeLoginPassword} handleLoginSubmit = {this.handleLoginSubmit} handleChangeSignUpEmail = {this.handleChangeSignUpEmail} handleChangeSignUpPassword = {this.handleChangeSignUpPassword} handleSignUpSubmit = {this.handleSignUpSubmit}/> : null);
         
         //Call check to see if it's time to take a medicine.
         const timeChecked = this.state.timeChecked;
@@ -343,8 +450,15 @@ class Base extends React.Component
         if(!timeChecked)
             this.checkForMedicineTime();
     
+       
         return(
             <div className = 'Base'>
+                <Account accountName = {this.state.accountName}/>
+                <button id = 'toggleLoginButton' onClick={() => this.toggleLogin()}>Login/Sign-Up</button>
+                <div>
+                    {loginForm}
+                </div>
+                
                 <h1>Medicine Reminder</h1>
                 <div className='header'>
                     <div className='instructions'>
