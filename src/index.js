@@ -390,7 +390,7 @@ class Base extends React.Component
         //Send account name/password to server
         console.log("Hello!");
 
-        //NEEDS TO BE ASYNC FOR PROPER AUTH
+        //TODO: NEEDS TO BE ASYNC FOR PROPER AUTH
         //Make sure user enters the proper information in the proper fields
         if(!this.state.signInEmail || !isValidEmail(this.state.signInEmail))
             alert("Please enter a valid email.");
@@ -408,7 +408,7 @@ class Base extends React.Component
     {
         //Send account name/password to server
         //Make sure user enters the proper information in the proper fields
-        //TODO: make sure email address is valid and password is strong (10+ characters, atleast one of each: uppercase, lowercase, number, symbol)
+        //TODO: make sure password is strong (10+ characters, atleast one of each: uppercase, lowercase, number, symbol)
         if(!this.state.signInEmail || !isValidEmail(this.state.signInEmail))
             alert("Please enter a valid email.");
         else if(!this.state.signInPassword)
@@ -417,6 +417,10 @@ class Base extends React.Component
         else
         {
             this.state.socket.emit("message", JSON.stringify({type:'SignUp', email: this.state.signUpEmail, password: this.state.signUpPassword}));
+            
+
+            //TODO: this needs to wait for repsonse from server that email is unique, or else throw alert("Email already in use.")
+            
             this.setState({accountName: this.state.signUpEmail});
             this.toggleLogin();
         }
@@ -470,6 +474,7 @@ class Base extends React.Component
         if(!timeChecked)
             this.checkForMedicineTime();
     
+
        
         return(
             <div className = 'Base'>
