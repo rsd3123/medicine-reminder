@@ -33,7 +33,7 @@ class Account extends React.Component
     {
         return(
             <div>
-                <text>Current Account: </text>
+                <text>Signed Into: </text>
                 <text>{this.props.accountName}</text> 
             </div>
         );
@@ -112,13 +112,13 @@ class Base extends React.Component
             socket: io(`http://${window.location.hostname}:3000`),
 
             isLogin: false,
-            accountName: "Not signed In",
+            accountName: "---",
 
 
-            signInEmail: '',
-            signInPassword: '',
-            signUpEmail: '',
-            signUpPassword: '',
+            signInEmail: null,
+            signInPassword: null,
+            signUpEmail: null,
+            signUpPassword: null,
         };
 
         this.handleChangeMed = this.handleChangeMed.bind(this);
@@ -389,18 +389,38 @@ class Base extends React.Component
     {
         //Send account name/password to server
         console.log("Hello!");
-        this.state.socket.emit("message", JSON.stringify({type:'SignIn', email: this.state.signInEmail, password: this.state.signInPassword}));
 
-        //socket.send
+        //NEEDS TO BE ASYNC FOR PROPER AUTH
+        //Make sure user enters the proper information in the proper fields
+        if(!this.state.signInEmail || !isValidEmail(this.state.signInEmail))
+            alert("Please enter a valid email.");
+        else if(!this.state.signInPassword)
+            alert("Please enter a password.");
+        else
+        {
+             this.state.socket.emit("message", JSON.stringify({type:'SignIn', email: this.state.signInEmail, password: this.state.signInPassword}));
+        }
+        
         event.preventDefault();
     }
 
     handleSignUpSubmit(event)
     {
         //Send account name/password to server
-        //console.log("Yo!");
-        this.state.socket.emit("message", JSON.stringify({type:'SignUp', email: this.state.signUpEmail, password: this.state.signUpPassword}));
-
+        //Make sure user enters the proper information in the proper fields
+        //TODO: make sure email address is valid and password is strong (10+ characters, atleast one of each: uppercase, lowercase, number, symbol)
+        if(!this.state.signInEmail || !isValidEmail(this.state.signInEmail))
+            alert("Please enter a valid email.");
+        else if(!this.state.signInPassword)
+            alert("Please enter a password.");
+        //If info is entered correctly: 
+        else
+        {
+            this.state.socket.emit("message", JSON.stringify({type:'SignUp', email: this.state.signUpEmail, password: this.state.signUpPassword}));
+            this.setState({accountName: this.state.signUpEmail});
+            this.toggleLogin();
+        }
+        
         //Get  conformation, then login with these credentials (Or not log in, just prompt "Account created, please log in.")
         event.preventDefault();
     }
@@ -487,3 +507,14 @@ class Base extends React.Component
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<Base />);
+
+function isValidEmail(email) {
+    var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    return regex.test(email);
+  }
+
+//Not yet implemented
+function isValidPassword(password) {
+    var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    return regex.test(password);
+}
