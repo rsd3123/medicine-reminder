@@ -123,6 +123,8 @@ class Base extends React.Component
 
             gotMessage: false,
             newestMessage: null,
+
+            waiting: false,
         };
 
         this.handleChangeMed = this.handleChangeMed.bind(this);
@@ -486,8 +488,23 @@ class Base extends React.Component
 
     render()
     {
-       
-       // this.state.socket.emit("message",JSON.stringify({type: 'test'}));
+       this.state.socket.on("message", message => {
+            message = JSON.parse(message);
+
+            switch(message.type)
+            {
+                case 'errorEmailExists':
+                    this.setState({waiting: false});
+                    break;
+                case "accountCreated":
+                    this.setState({waiting: false});
+                    break;
+                default:
+                    break;
+            }
+
+            
+       });
         console.log("Submit: " + this.state.medicineList);
         console.log("Date: " + this.state.realTime);
 
