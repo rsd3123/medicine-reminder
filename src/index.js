@@ -153,9 +153,16 @@ class Base extends React.Component
                 case 'signedIn':
                     var medicineList = this.state.medicineList;
 
-                    for(let i = 0; i < message.medicineList.length; i++)
+                    var newList = JSON.parse(message.medicineList);
+
+                    console.log(newList);
+                    console.log(newList[0].name);
+                    console.log(newList[1]);
+
+                    //Get list of medicines and display them.
+                    for(let i = 0; i < newList.length; i++)
                     {
-                        medicineList.concat([message.medicineList[i].name, [this.toDisplayTime(message.medicineList[i].time)], [message.medicineList[i].time]])
+                        medicineList = medicineList.concat([([newList[i].name, [this.toDisplayTime(newList[i].time)], [newList[i].time]])])
                     }
                     
                     this.setState({loading:false, accountName: message.name, medicineList: medicineList});
@@ -300,11 +307,12 @@ class Base extends React.Component
             }
             if(!alreadyIn)
             {
-                this.setState({medicineList: medicineList.concat([([medicineName, [time], [realTime]])])}); 
                 
                 //Send new medicine to server
                 this.state.socket.emit("message", JSON.stringify({type: "medicineAdded", medicineName: medicineName, medicineTime: realTime}));
             }
+
+            this.setState({medicineList: medicineList.concat([([medicineName, [time], [realTime]])])}); 
         }
         
         event.preventDefault();
