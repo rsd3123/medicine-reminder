@@ -125,8 +125,50 @@ class Base extends React.Component
             newestMessage: null,
 
             waiting: false,
+            loading: false,
         };
 
+        this.state.socket.on("message", (message) => {
+            message = JSON.parse(message);
+            console.log("Message from server")
+            switch(message.type)
+            {
+                case 'errorEmailExists':
+                    //this.setState({waiting: false});
+                    alert('Cannot create account, the given email is already in use.')
+                    this.setState({loading: false});
+                    break;
+                case "accountCreated":
+                    this.setState({loading: false, accountName: message.name});
+                    this.toggleLogin();
+                    break;
+                case 'emailDoesNotExist':
+                    alert("An account with this email does not already exist.");
+                    this.setState({loading: false});
+                    break;
+                case 'passwordIncorrect':
+                    alert("The email or password entered is incorrect.");
+                    this.setState({loading: false});
+                    break;
+                case 'signedIn':
+                    var medicineList = this.state.medicineList;
+
+                    for(let i = 0; i < message.medicineList.length; i++)
+                    {
+                        medicineList.concat([message.medicineList[i].name, [this.toDisplayTime(message.medicineList[i].time)], [message.medicineList[i].time]])
+                    }
+                    
+                    this.setState({loading:false, accountName: message.name, medicineList: medicineList});
+                    this.toggleLogin();
+                    
+                    console.log("Recived Signed In");
+                    break;
+                default:
+                    break;
+            }
+
+            
+       });
         this.handleChangeMed = this.handleChangeMed.bind(this);
         this.handleChangeHour = this.handleChangeHour.bind(this);
         this.handleChangeMin = this.handleChangeMin.bind(this);
@@ -139,6 +181,34 @@ class Base extends React.Component
         this.handleChangeSignUpPassword = this.handleChangeSignUpPassword.bind(this);
         this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
         this.handleSignUpSubmit = this.handleSignUpSubmit.bind(this);
+    }
+
+    toDisplayTime(time)
+    {
+        //Convert from military time to 12 hour time
+        var hour = parseInt(time.substring(0,2));
+        var min = parseInt(time.substring(4,6));
+        var meridian;
+
+        if(hour > 12)
+        {
+            hour = hour - 12;
+            meridian = 'PM';
+        }
+        else   
+            meridian = 'AM'
+        
+        if(hour < 10)
+        {
+            hour = '0'+hour;
+        }
+        if(min < 10)
+        {
+            min = '0'+min;
+        }
+        var displayTime = hour + ':' + min + " " + meridian;
+
+        return displayTime;
     }
 
     getRealTime()
@@ -202,7 +272,7 @@ class Base extends React.Component
         else if(hour === "--" || min === "--" || meridian === "--")
             alert("Please enter a proper time.")
 
-        //If input is viable, put into list
+        //If input is viable, put into list 
         else
         {
             var alreadyIn = false;
@@ -229,7 +299,12 @@ class Base extends React.Component
                 }
             }
             if(!alreadyIn)
+            {
                 this.setState({medicineList: medicineList.concat([([medicineName, [time], [realTime]])])}); 
+                
+                //Send new medicine to server
+                this.state.socket.emit("message", JSON.stringify({type: "medicineAdded", medicineName: medicineName, medicineTime: realTime}));
+            }
         }
         
         event.preventDefault();
@@ -405,12 +480,15 @@ class Base extends React.Component
         else
         {
              this.state.socket.emit("message", JSON.stringify({type:'SignIn', email: this.state.signInEmail, password: this.state.signInPassword}));
+
+             //Work on signin tm
+             this.setState({loading: true});
         }
         
         event.preventDefault();
     }
 
-    async handleSignUpSubmit(event)
+    handleSignUpSubmit(event)
     {
         //Send account name/password to server
         //Make sure user enters the proper information in the proper fields
@@ -424,11 +502,11 @@ class Base extends React.Component
         {
             this.state.socket.emit("message", JSON.stringify({type:'SignUp', email: this.state.signUpEmail, password: this.state.signUpPassword}));
             
-
+            this.setState({loading: true});
             //TODO: this needs to wait for repsonse from server that email is unique, or else throw alert("Email already in use.")
            // await this.waitForConf();
 
-            const response = this.state.newestMessage;
+            //const response = this.state.newestMessage;
             
 
             /*
@@ -437,6 +515,7 @@ class Base extends React.Component
 
             console.log("exists")
             */
+           /*
             if(response == "accountCreated")
             {
                 this.setState({accountName: this.state.signUpEmail});
@@ -447,25 +526,13 @@ class Base extends React.Component
             {
                 alert("Email already in use, please use a different email");
             }
-            
+            */
         }
         
         //Get  conformation, then login with these credentials (Or not log in, just prompt "Account created, please log in.")
         event.preventDefault();
     }
-    /*
-    async waitForConf()
-    {
-        
-        while(!this.state.gotMessage)
-        {
-            console.log("In while loop")
-        }
-        
-        console.log("Out of loop")
-        this.setState({gotMessage: false});
-    }
-    */
+   
     handleChangeLoginEmail(event)
     {
         this.setState({signInEmail: event.target.value});
@@ -488,23 +555,7 @@ class Base extends React.Component
 
     render()
     {
-       this.state.socket.on("message", message => {
-            message = JSON.parse(message);
-
-            switch(message.type)
-            {
-                case 'errorEmailExists':
-                    this.setState({waiting: false});
-                    break;
-                case "accountCreated":
-                    this.setState({waiting: false});
-                    break;
-                default:
-                    break;
-            }
-
-            
-       });
+       
         console.log("Submit: " + this.state.medicineList);
         console.log("Date: " + this.state.realTime);
 
@@ -512,6 +563,9 @@ class Base extends React.Component
         const isLogin = this.state.isLogin;
 
         const medicineList = this.state.medicineList;
+
+        
+        //TODO: on first load, load lists of medicines. This is done here.
         const currentList = medicineList.map((key, item) => {
             return <li key = {key}>
                 <Item medicineList = {this.state.medicineList[item]}/>
@@ -525,13 +579,11 @@ class Base extends React.Component
 
         if(!timeChecked)
             this.checkForMedicineTime();
-    
 
-       
         return(
             <div className = 'Base'>
                 <Account accountName = {this.state.accountName}/>
-                <button id = 'toggleLoginButton' onClick={() => this.toggleLogin()}>Login/Sign-Up</button>
+                <button id = 'toggleLoginButton' disabled = {this.state.loading} onClick={() => this.toggleLogin()}>Login/Sign-Up</button>
                 <div>
                     {loginForm}
                 </div>
