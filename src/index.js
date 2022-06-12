@@ -9,9 +9,7 @@
  *  -Remove medicine.
  *  -Remove certain time from list.
  *  -Clear list (done already by refreshing page)
- *  -Create account to save reminders.
- *      -If this is done, need backend.
- *      -Add ability for user to enter email/phone # to recieve message/email reminder.
+ * 
  *  -Check-off wether or not you took a certain medicine. (Resets every day)
  *  -Add ability to add multiple times at once.
  *      -Num of times box, create new text for each one.
@@ -79,10 +77,12 @@ class Item extends React.Component
     {
         const medicineName = this.props.medicineList[0];
         const time = this.props.medicineList[1];
+        const realTime = this.props.medicineList[2];
         
         return(
             <div>
                 {medicineName + " @ "+ time}
+                <button className='deleteItemButton' onClick = {this.props.deleteItem(medicineName, time, realTime)}>Delete</button>
             </div>
         );
     }
@@ -162,7 +162,19 @@ class Base extends React.Component
                     //Get list of medicines and display them.
                     for(let i = 0; i < newList.length; i++)
                     {
-                        medicineList = medicineList.concat([([newList[i].name, [this.toDisplayTime(newList[i].time)], [newList[i].time]])])
+                        var alreadyIn = false;
+
+                        for(let j = 0; j < medicineList.length; j++)
+                        {
+                            if(medicineList[j][0] == newList[i].name)
+                            {
+                                medicineList[j][1].push(this.toDisplayTime(newList[i].time));
+                                medicineList[j][2].push(newList[i].time);
+                                alreadyIn = true;
+                            }
+                        }
+                        if(!alreadyIn)
+                            medicineList = medicineList.concat([([newList[i].name, [this.toDisplayTime(newList[i].time)], [newList[i].time]])])
                     }
                     
                     this.setState({loading:false, accountName: message.name, medicineList: medicineList});
@@ -188,6 +200,8 @@ class Base extends React.Component
         this.handleChangeSignUpPassword = this.handleChangeSignUpPassword.bind(this);
         this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
         this.handleSignUpSubmit = this.handleSignUpSubmit.bind(this);
+
+        this.deleteItem = this.deleteItem.bind(this);
     }
 
     toDisplayTime(time)
@@ -197,7 +211,11 @@ class Base extends React.Component
         var min = parseInt(time.substring(4,6));
         var meridian;
 
-        if(hour > 12)
+        if(hour == 12)
+        {
+            meridian = 'PM';
+        }
+        else if(hour > 12)
         {
             hour = hour - 12;
             meridian = 'PM';
@@ -205,10 +223,6 @@ class Base extends React.Component
         else   
             meridian = 'AM'
         
-        if(hour < 10)
-        {
-            hour = '0'+hour;
-        }
         if(min < 10)
         {
             min = '0'+min;
@@ -307,12 +321,11 @@ class Base extends React.Component
             }
             if(!alreadyIn)
             {
-                
-                //Send new medicine to server
-                this.state.socket.emit("message", JSON.stringify({type: "medicineAdded", medicineName: medicineName, medicineTime: realTime}));
+                this.setState({medicineList: medicineList.concat([([medicineName, [time], [realTime]])])}); 
             }
 
-            this.setState({medicineList: medicineList.concat([([medicineName, [time], [realTime]])])}); 
+            //Send new medicine to server
+            this.state.socket.emit("message", JSON.stringify({type: "medicineAdded", medicineName: medicineName, medicineTime: realTime}));
         }
         
         event.preventDefault();
@@ -561,6 +574,19 @@ class Base extends React.Component
         this.setState({signUpPassword: event.target.value});
     }
 
+    deleteItem(medicineName, time, realTime)
+    {
+        var medicineList = this.state.medicineList;
+        
+        const index = medicineList.indexOf([medicineName, time, realTime]);
+        if (index > -1) 
+        {
+            medicineList.splice(index, 1); // 2nd parameter means remove one item only
+        }
+        this.setState({medicineList: medicineList});
+
+    }
+
     render()
     {
        
@@ -576,7 +602,7 @@ class Base extends React.Component
         //TODO: on first load, load lists of medicines. This is done here.
         const currentList = medicineList.map((key, item) => {
             return <li key = {key}>
-                <Item medicineList = {this.state.medicineList[item]}/>
+                <Item medicineList = {this.state.medicineList[item]} deleteItem = {this.deleteItem}/>
             </li>
         });
 
